@@ -321,6 +321,7 @@ namespace AS_02
       // Print debugging information to stream
       void     DumpHeaderMetadata(FILE* = 0) const;
       void     DumpIndex(FILE* = 0) const;
+      Result_t ReadAncillaryResource(const ui32_t StreamID, ASDCP::PCM::FrameBuffer& FrameBuf, ASDCP::AESDecContext* Ctx, ASDCP::HMACContext* HMAC) const;
     };
   } // namespace PCM
 
@@ -665,7 +666,7 @@ namespace AS_02
       // not NULL, the HMAC will be calculated (if the file supports it).
       // Returns RESULT_INIT if the file is not open, failure if the frame number is
       // out of range, or if optional decrypt or HAMC operations fail.
-      Result_t ReadFrame(ui32_t frame_number, ASDCP::PCM::FrameBuffer&, ASDCP::AESDecContext* = 0, ASDCP::HMACContext* = 0) const;
+      Result_t ReadFrame(ui32_t frame_number, ASDCP::JP2K::FrameBuffer&, ASDCP::AESDecContext* = 0, ASDCP::HMACContext* = 0) const;
 
       // Print debugging information to stream
       void     DumpHeaderMetadata(FILE* = 0) const;

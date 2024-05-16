@@ -226,6 +226,7 @@ namespace ASDCP {
     ESS_AS02_IAB,             // the file contains an IAB stream (per SMPTE ST 2067-201)
     ESS_AS02_JPEG_XS,         // the file contains one or more JPEG XS codestreams
     ESS_AS02_ProRes,          // the file contains one or more ProRes bitstreams (per SMPTE RDD 44)
+    ESS_AS02_MGASADM,         // the file contains an MGA S-ADM stream (per SMPTE ST 2067-203)
 
     // experimental
     ESS_JPEG_XS,              // the file contains one or more JPEG XS codestreams in an AS-DCP wrapping

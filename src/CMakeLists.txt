@@ -86,10 +86,10 @@ JXS.h AS_DCP.h AS_DCP_JXS.h AS_DCP_internal.h KLV.h MPEG.h MXFTypes.h MDD.h
 
 # source
 set(as02_src h__02_Reader.cpp h__02_Writer.cpp AS_02_ISXD.cpp AS_02_JP2K.cpp
-AS_02_JXS.cpp AS_02_PCM.cpp ST2052_TextParser.cpp AS_02_TimedText.cpp AS_02_ACES.cpp ACES_Codestream_Parser.cpp ACES_Sequence_Parser.cpp ACES.cpp AS_02_IAB.cpp ST2052_TextParser.cpp AS_02_ProRes.cpp)
+AS_02_JXS.cpp AS_02_PCM.cpp ST2052_TextParser.cpp AS_02_TimedText.cpp AS_02_ACES.cpp ACES_Codestream_Parser.cpp ACES_Sequence_Parser.cpp ACES.cpp AS_02_IAB.cpp ST2052_TextParser.cpp AS_02_ProRes.cpp AS_02_MGASADM.cpp)
 
 # header for deployment (install target)
-set(as02_deploy_header AS_02.h AS_02_JXS.h Metadata.h MXF.h MXFTypes.h KLV.h MDD.h AS_02_ACES.h ACES.h AS_02_IAB.h AS_02_internal.h)
+set(as02_deploy_header AS_02.h AS_02_JXS.h Metadata.h MXF.h MXFTypes.h KLV.h MDD.h AS_02_ACES.h ACES.h AS_02_IAB.h AS_02_internal.h AS_02_MGASADM.h)
 
 # header
 set(as02_src ${as02_src} AS_02.h AS_02_JXS.h AS_02_internal.h AS_02_ACES.h ACES.h AS_02_IAB.h AS_02_PHDR.h)

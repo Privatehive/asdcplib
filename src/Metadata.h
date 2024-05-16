@@ -939,7 +939,9 @@ namespace ASDCP
           optional_property<UTF16String > MCAPartitionKind;
           optional_property<UTF16String > MCAPartitionNumber;
           optional_property<UTF16String > MCAAudioContentKind;
+          optional_property<UTF16String > MCAContent;
           optional_property<UTF16String > MCAAudioElementKind;
+          optional_property<UTF16String > MCAUseClass;
 
       MCALabelSubDescriptor(const Dictionary* d);
       MCALabelSubDescriptor(const MCALabelSubDescriptor& rhs);
@@ -1339,6 +1341,132 @@ namespace ASDCP
       virtual void     Dump(FILE* = 0);
       virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
       virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
+      class MGASoundEssenceDescriptor : public GenericSoundEssenceDescriptor
+	{
+	  MGASoundEssenceDescriptor();
+
+	public:
+
+      ui16_t MGASoundEssenceBlockAlign;
+      ui32_t MGASoundEssenceAverageBytesPerSecond;
+      MGASoundEssenceDescriptor(const Dictionary* d);
+      MGASoundEssenceDescriptor(const MGASoundEssenceDescriptor& rhs);
+      virtual ~MGASoundEssenceDescriptor() {}
+
+      const MGASoundEssenceDescriptor& operator=(const MGASoundEssenceDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const MGASoundEssenceDescriptor& rhs);
+      virtual InterchangeObject *Clone() const;
+      virtual const char* HasName() { return "MGASoundEssenceDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
+      class MGASoundfieldGroupLabelSubDescriptor : public SoundfieldGroupLabelSubDescriptor
+	{
+	  MGASoundfieldGroupLabelSubDescriptor();
+
+	public:
+          UL MGAMetadataSectionLinkID;
+          optional_property<UTF16String > ADMAudioProgrammeID;
+          optional_property<UTF16String > ADMAudioContentID;
+          optional_property<UTF16String > ADMAudioObjectID;
+
+	  MGASoundfieldGroupLabelSubDescriptor(const Dictionary* d);
+      MGASoundfieldGroupLabelSubDescriptor(const MGASoundfieldGroupLabelSubDescriptor& rhs);
+      virtual ~MGASoundfieldGroupLabelSubDescriptor() {}
+
+      const MGASoundfieldGroupLabelSubDescriptor& operator=(const MGASoundfieldGroupLabelSubDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const MGASoundfieldGroupLabelSubDescriptor& rhs);
+      virtual InterchangeObject *Clone() const;
+      virtual const char* HasName() { return "MGASoundfieldGroupLabelSubDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+     //
+      class MGAAudioMetadataSubDescriptor : public InterchangeObject
+	{
+	  MGAAudioMetadataSubDescriptor();
+
+	public:
+      UL MGALinkID;
+      ui8_t MGAAudioMetadataIndex;
+      ui8_t MGAAudioMetadataIdentifier;
+      Batch<UL> MGAAudioMetadataPayloadULArray;
+
+      MGAAudioMetadataSubDescriptor(const Dictionary* d);
+      MGAAudioMetadataSubDescriptor(const MGAAudioMetadataSubDescriptor& rhs);
+      virtual ~MGAAudioMetadataSubDescriptor() {}
+
+      const MGAAudioMetadataSubDescriptor& operator=(const MGAAudioMetadataSubDescriptor& rhs) { Copy(rhs); return *this; }
+      virtual void Copy(const MGAAudioMetadataSubDescriptor& rhs);
+      virtual InterchangeObject *Clone() const;
+      virtual const char* HasName() { return "MGAAudioMetadataSubDescriptor"; }
+      virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+      virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+      virtual void     Dump(FILE* = 0);
+      virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+      virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+      //
+       class ADMAudioMetadataSubDescriptor : public InterchangeObject
+	{
+	  ADMAudioMetadataSubDescriptor();
+
+	public:
+       ui32_t RIFFChunkStreamID_link1;
+       optional_property<Batch<UL> > ADMProfileLevelULBatch;
+
+       ADMAudioMetadataSubDescriptor(const Dictionary* d);
+       ADMAudioMetadataSubDescriptor(const ADMAudioMetadataSubDescriptor& rhs);
+       virtual ~ADMAudioMetadataSubDescriptor() {}
+
+       const ADMAudioMetadataSubDescriptor& operator=(const ADMAudioMetadataSubDescriptor& rhs) { Copy(rhs); return *this; }
+       virtual void Copy(const ADMAudioMetadataSubDescriptor& rhs);
+       virtual InterchangeObject *Clone() const;
+       virtual const char* HasName() { return "ADMAudioMetadataSubDescriptor"; }
+       virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+       virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+       virtual void     Dump(FILE* = 0);
+       virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+       virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
+	};
+
+       //
+       class ADMSoundfieldGroupLabelSubDescriptor : public SoundfieldGroupLabelSubDescriptor
+	{
+	  ADMSoundfieldGroupLabelSubDescriptor();
+
+	public:
+          ui32_t RIFFChunkStreamID_link2;
+          optional_property<UTF16String > ADMAudioProgrammeID_ST2131;
+          optional_property<UTF16String > ADMAudioContentID_ST2131;
+          optional_property<UTF16String > ADMAudioObjectID_ST2131;
+
+       ADMSoundfieldGroupLabelSubDescriptor(const Dictionary* d);
+       ADMSoundfieldGroupLabelSubDescriptor(const ADMSoundfieldGroupLabelSubDescriptor& rhs);
+       virtual ~ADMSoundfieldGroupLabelSubDescriptor() {}
+
+       const ADMSoundfieldGroupLabelSubDescriptor& operator=(const ADMSoundfieldGroupLabelSubDescriptor& rhs) { Copy(rhs); return *this; }
+       virtual void Copy(const ADMSoundfieldGroupLabelSubDescriptor& rhs);
+       virtual InterchangeObject *Clone() const;
+       virtual const char* HasName() { return "ADMSoundfieldGroupLabelSubDescriptor"; }
+       virtual Result_t InitFromTLVSet(TLVReader& TLVSet);
+       virtual Result_t WriteToTLVSet(TLVWriter& TLVSet);
+       virtual void     Dump(FILE* = 0);
+       virtual Result_t InitFromBuffer(const byte_t* p, ui32_t l);
+       virtual Result_t WriteToBuffer(ASDCP::FrameBuffer&);
 	};
 
       //
