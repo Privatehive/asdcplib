@@ -89,6 +89,10 @@ static InterchangeObject* PHDRMetadataTrackSubDescriptor_Factory(const Dictionar
 static InterchangeObject* PIMFDynamicMetadataDescriptor_Factory(const Dictionary* Dict) { return new PIMFDynamicMetadataDescriptor(Dict); }
 static InterchangeObject* IABEssenceDescriptor_Factory(const Dictionary* Dict) { return new IABEssenceDescriptor(Dict); }
 static InterchangeObject* IABSoundfieldLabelSubDescriptor_Factory(const Dictionary* Dict) { return new IABSoundfieldLabelSubDescriptor(Dict); }
+static InterchangeObject* MGASoundEssenceDescriptor_Factory(const Dictionary* Dict) { return new MGASoundEssenceDescriptor(Dict); }
+static InterchangeObject* MGASoundfieldGroupLabelSubDescriptor_Factory(const Dictionary* Dict) { return new MGASoundfieldGroupLabelSubDescriptor(Dict); }
+static InterchangeObject* ADMAudioMetadataSubDescriptor_Factory(const Dictionary* Dict) { return new ADMAudioMetadataSubDescriptor(Dict); }
+static InterchangeObject* ADMSoundfieldGroupLabelSubDescriptor_Factory(const Dictionary* Dict) { return new ADMSoundfieldGroupLabelSubDescriptor(Dict); }
 static InterchangeObject* JPEGXSPictureSubDescriptor_Factory(const Dictionary* Dict) { return new JPEGXSPictureSubDescriptor(Dict); }
 
 
@@ -145,6 +149,10 @@ ASDCP::MXF::Metadata_InitTypes(const Dictionary* Dict)
   SetObjectFactory(Dict->ul(MDD_PIMFDynamicMetadataDescriptor), PIMFDynamicMetadataDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_IABEssenceDescriptor), IABEssenceDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_IABSoundfieldLabelSubDescriptor), IABSoundfieldLabelSubDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_MGASoundEssenceDescriptor), MGASoundEssenceDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_MGASoundfieldGroupLabelSubDescriptor), MGASoundfieldGroupLabelSubDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_ADMSoundfieldGroupLabelSubDescriptor), ADMSoundfieldGroupLabelSubDescriptor_Factory);
+  SetObjectFactory(Dict->ul(MDD_ADMAudioMetadataSubDescriptor), ADMAudioMetadataSubDescriptor_Factory);
   SetObjectFactory(Dict->ul(MDD_JPEGXSPictureSubDescriptor), JPEGXSPictureSubDescriptor_Factory);
 }
 
@@ -3794,8 +3802,16 @@ MCALabelSubDescriptor::InitFromTLVSet(TLVReader& TLVSet)
     MCAAudioContentKind.set_has_value( result == RESULT_OK );
   }
   if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAContent));
+    MCAContent.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
     result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAAudioElementKind));
     MCAAudioElementKind.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MCALabelSubDescriptor, MCAUseClass));
+    MCAUseClass.set_has_value( result == RESULT_OK );
   }
   return result;
 }
@@ -3819,7 +3835,9 @@ MCALabelSubDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
   if ( ASDCP_SUCCESS(result)  && ! MCAPartitionKind.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAPartitionKind));
   if ( ASDCP_SUCCESS(result)  && ! MCAPartitionNumber.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAPartitionNumber));
   if ( ASDCP_SUCCESS(result)  && ! MCAAudioContentKind.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAAudioContentKind));
+  if ( ASDCP_SUCCESS(result)  && ! MCAContent.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAContent));
   if ( ASDCP_SUCCESS(result)  && ! MCAAudioElementKind.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAAudioElementKind));
+  if ( ASDCP_SUCCESS(result)  && ! MCAUseClass.empty() ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MCALabelSubDescriptor, MCAUseClass));
   return result;
 }
 
@@ -3841,7 +3859,9 @@ MCALabelSubDescriptor::Copy(const MCALabelSubDescriptor& rhs)
   MCAPartitionKind = rhs.MCAPartitionKind;
   MCAPartitionNumber = rhs.MCAPartitionNumber;
   MCAAudioContentKind = rhs.MCAAudioContentKind;
+  MCAContent = rhs.MCAContent;
   MCAAudioElementKind = rhs.MCAAudioElementKind;
+  MCAUseClass = rhs.MCAUseClass;
 }
 
 //
@@ -3895,8 +3915,14 @@ MCALabelSubDescriptor::Dump(FILE* stream)
   if ( ! MCAAudioContentKind.empty() ) {
     fprintf(stream, "  %22s = %s\n",  "MCAAudioContentKind", MCAAudioContentKind.get().EncodeString(identbuf, IdentBufferLen));
   }
+  if ( ! MCAContent.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCAContent", MCAContent.get().EncodeString(identbuf, IdentBufferLen));
+  }
   if ( ! MCAAudioElementKind.empty() ) {
     fprintf(stream, "  %22s = %s\n",  "MCAAudioElementKind", MCAAudioElementKind.get().EncodeString(identbuf, IdentBufferLen));
+  }
+  if ( ! MCAUseClass.empty() ) {
+    fprintf(stream, "  %22s = %s\n",  "MCAUseClass", MCAUseClass.get().EncodeString(identbuf, IdentBufferLen));
   }
 }
 
@@ -5345,6 +5371,373 @@ IABSoundfieldLabelSubDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
 //
 ASDCP::Result_t
 IABSoundfieldLabelSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
+//------------------------------------------------------------------------------------------
+// MGASoundEssenceDescriptor
+
+//
+
+MGASoundEssenceDescriptor::MGASoundEssenceDescriptor(const Dictionary* d) : GenericSoundEssenceDescriptor(d), MGASoundEssenceBlockAlign(0), MGASoundEssenceAverageBytesPerSecond(0)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_MGASoundEssenceDescriptor);
+}
+
+MGASoundEssenceDescriptor::MGASoundEssenceDescriptor(const MGASoundEssenceDescriptor& rhs) : GenericSoundEssenceDescriptor(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_MGASoundEssenceDescriptor);
+  Copy(rhs);
+}
+
+
+//
+ASDCP::Result_t
+MGASoundEssenceDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = GenericSoundEssenceDescriptor::InitFromTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi32(OBJ_READ_ARGS(MGASoundEssenceDescriptor, MGASoundEssenceAverageBytesPerSecond));
+  return result;
+}
+
+//
+ASDCP::Result_t
+MGASoundEssenceDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = GenericSoundEssenceDescriptor::WriteToTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS(MGASoundEssenceDescriptor, MGASoundEssenceAverageBytesPerSecond));
+  return result;
+}
+
+//
+void
+MGASoundEssenceDescriptor::Copy(const MGASoundEssenceDescriptor& rhs)
+{
+  GenericSoundEssenceDescriptor::Copy(rhs);
+  MGASoundEssenceBlockAlign = rhs.MGASoundEssenceBlockAlign;
+  MGASoundEssenceAverageBytesPerSecond = rhs.MGASoundEssenceAverageBytesPerSecond;
+}
+
+//
+InterchangeObject*
+MGASoundEssenceDescriptor::Clone() const
+{
+  return new MGASoundEssenceDescriptor(*this);
+}
+
+//
+void
+MGASoundEssenceDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  GenericSoundEssenceDescriptor::Dump(stream);
+}
+
+//
+ASDCP::Result_t
+MGASoundEssenceDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+MGASoundEssenceDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
+//------------------------------------------------------------------------------------------
+// MGASoundfieldGroupLabelSubDescriptor
+
+//
+
+MGASoundfieldGroupLabelSubDescriptor::MGASoundfieldGroupLabelSubDescriptor(const Dictionary* d) : SoundfieldGroupLabelSubDescriptor(d)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_MGASoundfieldGroupLabelSubDescriptor);
+}
+
+MGASoundfieldGroupLabelSubDescriptor::MGASoundfieldGroupLabelSubDescriptor(const MGASoundfieldGroupLabelSubDescriptor& rhs) : SoundfieldGroupLabelSubDescriptor(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_MGASoundfieldGroupLabelSubDescriptor);
+  Copy(rhs);
+}
+
+
+//
+ASDCP::Result_t
+MGASoundfieldGroupLabelSubDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = SoundfieldGroupLabelSubDescriptor::InitFromTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadObject(OBJ_READ_ARGS(MGASoundfieldGroupLabelSubDescriptor, MGAMetadataSectionLinkID));
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MGASoundfieldGroupLabelSubDescriptor, ADMAudioProgrammeID));
+    ADMAudioProgrammeID.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MGASoundfieldGroupLabelSubDescriptor, ADMAudioContentID));
+    ADMAudioContentID.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(MGASoundfieldGroupLabelSubDescriptor, ADMAudioObjectID));
+    ADMAudioObjectID.set_has_value( result == RESULT_OK );
+  }
+  return result;
+}
+
+//
+ASDCP::Result_t
+MGASoundfieldGroupLabelSubDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = SoundfieldGroupLabelSubDescriptor::WriteToTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS(MGASoundfieldGroupLabelSubDescriptor, MGAMetadataSectionLinkID));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MGASoundfieldGroupLabelSubDescriptor, ADMAudioProgrammeID));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MGASoundfieldGroupLabelSubDescriptor, ADMAudioContentID));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(MGASoundfieldGroupLabelSubDescriptor, ADMAudioObjectID));
+  return result;
+}
+
+//
+void
+MGASoundfieldGroupLabelSubDescriptor::Copy(const MGASoundfieldGroupLabelSubDescriptor& rhs)
+{
+  SoundfieldGroupLabelSubDescriptor::Copy(rhs);
+  MGAMetadataSectionLinkID = rhs.MGAMetadataSectionLinkID;
+  ADMAudioContentID = rhs.ADMAudioContentID;
+  ADMAudioObjectID = rhs.ADMAudioObjectID;
+  ADMAudioProgrammeID = rhs.ADMAudioProgrammeID;
+}
+
+//
+InterchangeObject*
+MGASoundfieldGroupLabelSubDescriptor::Clone() const
+{
+  return new MGASoundfieldGroupLabelSubDescriptor(*this);
+}
+
+//
+void
+MGASoundfieldGroupLabelSubDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  SoundfieldGroupLabelSubDescriptor::Dump(stream);
+}
+
+//
+ASDCP::Result_t
+MGASoundfieldGroupLabelSubDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+MGASoundfieldGroupLabelSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
+//------------------------------------------------------------------------------------------
+// ADMAudioMetadataSubDescriptor
+
+//
+
+ADMAudioMetadataSubDescriptor::ADMAudioMetadataSubDescriptor(const Dictionary* d) : InterchangeObject(d)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_ADMAudioMetadataSubDescriptor);
+}
+
+ADMAudioMetadataSubDescriptor::ADMAudioMetadataSubDescriptor(const ADMAudioMetadataSubDescriptor& rhs) : InterchangeObject(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_ADMAudioMetadataSubDescriptor);
+  Copy(rhs);
+}
+
+
+//
+ASDCP::Result_t
+ADMAudioMetadataSubDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = InterchangeObject::InitFromTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi32(OBJ_READ_ARGS(ADMAudioMetadataSubDescriptor, RIFFChunkStreamID_link1));
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(ADMAudioMetadataSubDescriptor, ADMProfileLevelULBatch));
+    ADMProfileLevelULBatch.set_has_value( result == RESULT_OK );
+  }
+  return result;
+}
+
+//
+ASDCP::Result_t
+ADMAudioMetadataSubDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = InterchangeObject::WriteToTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS(ADMAudioMetadataSubDescriptor, RIFFChunkStreamID_link1));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(ADMAudioMetadataSubDescriptor, ADMProfileLevelULBatch));
+  return result;
+}
+
+//
+void
+ADMAudioMetadataSubDescriptor::Copy(const ADMAudioMetadataSubDescriptor& rhs)
+{
+  InterchangeObject::Copy(rhs);
+  RIFFChunkStreamID_link1 = rhs.RIFFChunkStreamID_link1;
+  ADMProfileLevelULBatch = rhs.ADMProfileLevelULBatch;
+}
+
+//
+InterchangeObject*
+ADMAudioMetadataSubDescriptor::Clone() const
+{
+  return new ADMAudioMetadataSubDescriptor(*this);
+}
+
+//
+void
+ADMAudioMetadataSubDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  InterchangeObject::Dump(stream);
+}
+
+//
+ASDCP::Result_t
+ADMAudioMetadataSubDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+ADMAudioMetadataSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
+{
+  return InterchangeObject::WriteToBuffer(Buffer);
+}
+
+//------------------------------------------------------------------------------------------
+// ADMSoundfieldGroupLabelSubDescriptor
+
+//
+
+ADMSoundfieldGroupLabelSubDescriptor::ADMSoundfieldGroupLabelSubDescriptor(const Dictionary* d) : SoundfieldGroupLabelSubDescriptor(d)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_ADMSoundfieldGroupLabelSubDescriptor);
+}
+
+ADMSoundfieldGroupLabelSubDescriptor::ADMSoundfieldGroupLabelSubDescriptor(const ADMSoundfieldGroupLabelSubDescriptor& rhs) : SoundfieldGroupLabelSubDescriptor(rhs.m_Dict)
+{
+  assert(m_Dict);
+  m_UL = m_Dict->ul(MDD_ADMSoundfieldGroupLabelSubDescriptor);
+  Copy(rhs);
+}
+
+
+//
+ASDCP::Result_t
+ADMSoundfieldGroupLabelSubDescriptor::InitFromTLVSet(TLVReader& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = SoundfieldGroupLabelSubDescriptor::InitFromTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.ReadUi32(OBJ_READ_ARGS(ADMSoundfieldGroupLabelSubDescriptor, RIFFChunkStreamID_link2));
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(ADMSoundfieldGroupLabelSubDescriptor, ADMAudioProgrammeID_ST2131));
+    ADMAudioProgrammeID_ST2131.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(ADMSoundfieldGroupLabelSubDescriptor, ADMAudioContentID_ST2131));
+    ADMAudioContentID_ST2131.set_has_value( result == RESULT_OK );
+  }
+  if ( ASDCP_SUCCESS(result) ) {
+    result = TLVSet.ReadObject(OBJ_READ_ARGS_OPT(ADMSoundfieldGroupLabelSubDescriptor, ADMAudioObjectID_ST2131));
+    ADMAudioObjectID_ST2131.set_has_value( result == RESULT_OK );
+  }
+  return result;
+}
+
+//
+ASDCP::Result_t
+ADMSoundfieldGroupLabelSubDescriptor::WriteToTLVSet(TLVWriter& TLVSet)
+{
+  assert(m_Dict);
+  Result_t result = SoundfieldGroupLabelSubDescriptor::WriteToTLVSet(TLVSet);
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteUi32(OBJ_WRITE_ARGS(ADMSoundfieldGroupLabelSubDescriptor, RIFFChunkStreamID_link2));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(ADMSoundfieldGroupLabelSubDescriptor, ADMAudioProgrammeID_ST2131));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(ADMSoundfieldGroupLabelSubDescriptor, ADMAudioContentID_ST2131));
+  if ( ASDCP_SUCCESS(result) ) result = TLVSet.WriteObject(OBJ_WRITE_ARGS_OPT(ADMSoundfieldGroupLabelSubDescriptor, ADMAudioObjectID_ST2131));
+  return result;
+}
+
+//
+void
+ADMSoundfieldGroupLabelSubDescriptor::Copy(const ADMSoundfieldGroupLabelSubDescriptor& rhs)
+{
+  SoundfieldGroupLabelSubDescriptor::Copy(rhs);
+  RIFFChunkStreamID_link2 = rhs.RIFFChunkStreamID_link2;
+  ADMAudioProgrammeID_ST2131 = rhs.ADMAudioProgrammeID_ST2131;
+  ADMAudioContentID_ST2131 = rhs.ADMAudioContentID_ST2131;
+  ADMAudioObjectID_ST2131 = rhs.ADMAudioObjectID_ST2131;
+}
+
+//
+InterchangeObject*
+ADMSoundfieldGroupLabelSubDescriptor::Clone() const
+{
+  return new ADMSoundfieldGroupLabelSubDescriptor(*this);
+}
+
+//
+void
+ADMSoundfieldGroupLabelSubDescriptor::Dump(FILE* stream)
+{
+  char identbuf[IdentBufferLen];
+  *identbuf = 0;
+
+  if ( stream == 0 )
+    stream = stderr;
+
+  SoundfieldGroupLabelSubDescriptor::Dump(stream);
+}
+
+//
+ASDCP::Result_t
+ADMSoundfieldGroupLabelSubDescriptor::InitFromBuffer(const byte_t* p, ui32_t l)
+{
+  return InterchangeObject::InitFromBuffer(p, l);
+}
+
+//
+ASDCP::Result_t
+ADMSoundfieldGroupLabelSubDescriptor::WriteToBuffer(ASDCP::FrameBuffer& Buffer)
 {
   return InterchangeObject::WriteToBuffer(Buffer);
 }

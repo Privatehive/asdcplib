@@ -62,6 +62,7 @@ public:
 
   ASDCP::Result_t    OpenRead(const std::string&, const ASDCP::Rational& edit_rate);
   ASDCP::Result_t    ReadFrame(ui32_t, ASDCP::PCM::FrameBuffer&, ASDCP::AESDecContext*, ASDCP::HMACContext*);
+  ASDCP::Result_t    ReadAncillaryResource(const ui32_t StreamID, ASDCP::PCM::FrameBuffer& FrameBuf, ASDCP::AESDecContext* Ctx, ASDCP::HMACContext* HMAC);
 };
 
 // TODO: This will ignore any body partitions past the first
@@ -193,6 +194,62 @@ AS_02::PCM::MXFReader::h__Reader::ReadFrame(ui32_t FrameNum, ASDCP::PCM::FrameBu
   return result;
 }
 
+AS_02::Result_t
+AS_02::PCM::MXFReader::h__Reader::ReadAncillaryResource(const ui32_t StreamID, ASDCP::PCM::FrameBuffer& FrameBuf, ASDCP::AESDecContext* Ctx, ASDCP::HMACContext* HMAC)
+{
+
+    RIP::const_pair_iterator pi;
+    RIP::PartitionPair TmpPair;
+    ui32_t sequence = 0;
+    AS_02::Result_t result = RESULT_OK;
+
+    // Look up the partition start in the RIP using the SID.
+    // Count the sequence length in because this is the sequence
+    // value needed to  complete the HMAC.
+    for(pi = m_RIP.PairArray.begin(); pi != m_RIP.PairArray.end(); ++pi, ++sequence)
+    {
+      if((*pi).BodySID == StreamID)
+      {
+        TmpPair = *pi;
+        break;
+      }
+    }
+
+    if(TmpPair.ByteOffset == 0)
+    {
+      DefaultLogSink().Error("Body SID not found in RIP set: %d\n", StreamID);
+      return RESULT_FORMAT;
+    }
+
+    // seek to the start of the partition
+    if((Kumu::fpos_t)TmpPair.ByteOffset != m_LastPosition)
+    {
+      m_LastPosition = TmpPair.ByteOffset;
+      result = m_File->Seek(TmpPair.ByteOffset);
+    }
+
+    // read the partition header
+    ASDCP::MXF::Partition GSPart(m_Dict);
+    result = GSPart.InitFromFile(*m_File);
+
+    if(ASDCP_SUCCESS(result))
+    {
+      // check the SID
+      if(StreamID != GSPart.BodySID)
+      {
+        char buf[64];
+        DefaultLogSink().Error("Generic stream partition body differs: %d\n", GSPart.BodySID);
+        return RESULT_FORMAT;
+      }
+
+        // read the essence packet
+      assert(m_Dict);
+      if(ASDCP_SUCCESS(result))
+        result = ReadEKLVPacket(0, sequence, FrameBuf, m_Dict->ul(MDD_GenericStream_DataElement), Ctx, HMAC);
+    }
+
+  return result;
+}
 
 //------------------------------------------------------------------------------------------
 //
@@ -283,6 +340,15 @@ AS_02::PCM::MXFReader::ReadFrame(ui32_t FrameNum, ASDCP::PCM::FrameBuffer& Frame
 {
   if ( m_Reader && m_Reader->m_File->IsOpen() )
     return m_Reader->ReadFrame(FrameNum, FrameBuf, Ctx, HMAC);
+
+  return RESULT_INIT;
+}
+
+AS_02::Result_t AS_02::PCM::MXFReader::ReadAncillaryResource(const ui32_t StreamID, ASDCP::PCM::FrameBuffer &FrameBuf, ASDCP::AESDecContext *Ctx , ASDCP::HMACContext *HMAC ) const
+{
+
+  if(m_Reader && m_Reader->m_File->IsOpen())
+    return m_Reader->ReadAncillaryResource(StreamID, FrameBuf, Ctx, HMAC);
 
   return RESULT_INIT;
 }

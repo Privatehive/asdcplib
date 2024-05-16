@@ -305,6 +305,10 @@ ASDCP::EssenceType(const std::string& filename, EssenceType_t& type, const Kumu:
 	      {
 	        type = ESS_AS02_IAB;
 	      }
+	    else if ( ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(MGASoundEssenceDescriptor))) )
+	      {
+	        type = ESS_AS02_MGASADM;
+	      }
 	  }
 	}
       else
