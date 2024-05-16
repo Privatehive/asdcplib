@@ -605,6 +605,7 @@ namespace ASDCP {
 	MDD_CodingEquations_BGR, // 567
 	MDD_CodingEquations_ST240M, // 568
 	MDD_CodingEquations_YCGCO, // 569
+	MDD_MXFGCFrameWrappedEssenceContainerProResPicture, // 570
 	MDD_Max
     }; // enum MDD_t
 
