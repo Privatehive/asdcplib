@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <iomanip>
 
+
 //------------------------------------------------------------------------------------------
 
 static std::string ProRes_PACKAGE_LABEL = "File Package: RDD 44 frame wrapping of ProRes video";
@@ -47,19 +48,16 @@ static std::string PICT_DEF_LABEL = "Image Track";
 
 class AS_02::ProRes::MXFReader::h__Reader : public AS_02::h__AS02Reader
 {
-  ui64_t m_ClipEssenceBegin, m_ClipSize;
-  ui32_t m_ClipDurationFrames, m_BytesPerFrame;
-
   ASDCP_NO_COPY_CONSTRUCT(h__Reader);
-  ASDCP::MXF::RGBAEssenceDescriptor *m_EssenceDescriptor;
 
 public:
-  h__Reader(const Dictionary *d, const Kumu::IFileReaderFactory& fileReaderFactory) : AS_02::h__AS02Reader(d, fileReaderFactory), m_ClipEssenceBegin(0), m_ClipSize(0),
-				   m_ClipDurationFrames(0), m_BytesPerFrame(0), m_EssenceDescriptor(NULL) {}
+  h__Reader(const Dictionary* d, const Kumu::IFileReaderFactory& fileReaderFactory) :
+    AS_02::h__AS02Reader(d, fileReaderFactory) {}
+
   virtual ~h__Reader() {}
 
   ASDCP::Result_t    OpenRead(const std::string&);
-  ASDCP::Result_t    ReadFrame(ui32_t, ASDCP::PCM::FrameBuffer&, ASDCP::AESDecContext*, ASDCP::HMACContext*);
+  ASDCP::Result_t    ReadFrame(ui32_t, ASDCP::JP2K::FrameBuffer&, ASDCP::AESDecContext*, ASDCP::HMACContext*);
 };
 
 // TODO: This will ignore any body partitions past the first
@@ -93,18 +91,20 @@ AS_02::ProRes::MXFReader::h__Reader::OpenRead(const std::string& filename)
 
 	  return result;
 }
-/*
- * Commented out, subject to potential later implementation
- */
-/*
 //
-ASDCP::Result_t
-AS_02::ProRes::MXFReader::h__Reader::ReadFrame(ui32_t FrameNum, ASDCP::PCM::FrameBuffer& FrameBuf,
-					    ASDCP::AESDecContext* Ctx, ASDCP::HMACContext* HMAC)
+//
+Result_t
+AS_02::ProRes::MXFReader::h__Reader::ReadFrame(ui32_t FrameNum, ASDCP::JP2K::FrameBuffer& FrameBuf,
+		      ASDCP::AESDecContext* Ctx, ASDCP::HMACContext* HMAC)
 {
+  if ( ! m_File->IsOpen() )
+    return RESULT_INIT;
 
+  assert(m_Dict);
+  return ReadEKLVFrame(FrameNum, FrameBuf, m_Dict->ul(MDD_FrameWrappedProResPictureElement), Ctx, HMAC);
 }
-*/
+
+
 
 AS_02::ProRes::MXFReader::MXFReader(const Kumu::IFileReaderFactory& fileReaderFactory)
 {
@@ -180,6 +180,18 @@ AS_02::ProRes::MXFReader::Close() const
 
   return RESULT_INIT;
 }
+
+//
+Result_t
+AS_02::ProRes::MXFReader::ReadFrame(ui32_t FrameNum, ASDCP::JP2K::FrameBuffer& FrameBuf,
+					   ASDCP::AESDecContext* Ctx, ASDCP::HMACContext* HMAC) const
+{
+  if ( m_Reader && m_Reader->m_File->IsOpen() )
+    return m_Reader->ReadFrame(FrameNum, FrameBuf, Ctx, HMAC);
+
+  return RESULT_INIT;
+}
+
 
 
 // Fill the struct with the values from the file's header.
