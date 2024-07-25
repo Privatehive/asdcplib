@@ -88,16 +88,6 @@ AS_02::MXF::AS02IndexReader::InitFromFile(const Kumu::IFileReader& reader, const
       if ( i->BodySID == 0 )
 	continue;
 
-      if ( first_body_sid == 0 )
-	{
-	  first_body_sid = i->BodySID;
-	}
-      else if ( i->BodySID != first_body_sid )
-	{
-	  //	  DefaultLogSink().Debug("The index assembler is ignoring BodySID %d.\n", i->BodySID);
-	  continue;
-	}
-
       reader.Seek(i->ByteOffset);
       ASDCP::MXF::Partition *this_partition = new ASDCP::MXF::Partition(m_Dict);
       assert(this_partition);
@@ -108,6 +98,23 @@ AS_02::MXF::AS02IndexReader::InitFromFile(const Kumu::IFileReader& reader, const
 	{
 	  delete this_partition;
 	  return result;
+	}
+
+      UL TmpUL(m_Dict->ul(MDD_GenericStreamPartition));
+      if (this_partition->GetUL().MatchExact(TmpUL)) // ignore GSPs
+	{
+	  delete this_partition;
+	  continue;
+	}
+
+      if ( first_body_sid == 0 )
+	{
+	  first_body_sid = i->BodySID;
+	}
+      else if ( i->BodySID != first_body_sid )
+	{
+	  DefaultLogSink().Debug("The index assembler is ignoring BodySID %d.\n", i->BodySID);
+	  continue;
 	}
 
       if ( this_partition->BodySID != i->BodySID )
