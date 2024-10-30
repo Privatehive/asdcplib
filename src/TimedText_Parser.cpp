@@ -39,7 +39,7 @@ using namespace ASDCP;
 
 using Kumu::DefaultLogSink;
 
-static const char* c_dcst_namespace_name = "http://www.smpte-ra.org/schemas/428-7/2007/DCST";
+static const char* c_dcst_namespace_name = "http://www.smpte-ra.org/schemas/428-7/2014/DCST";
 
 //------------------------------------------------------------------------------------------
 
@@ -269,6 +269,18 @@ ASDCP::TimedText::DCSubtitleParser::h__SubtitleParser::OpenRead()
       DefaultLogSink(). Error("Unexpected EditRate: %d/%d\n",
 			      m_TDesc.EditRate.Numerator, m_TDesc.EditRate.Denominator);
       return RESULT_FORMAT;
+    }
+
+  // Language
+  XMLElement* Language = m_Root.GetChildWithName("Language");
+
+  if ( Language == 0 )
+    {
+      DefaultLogSink().Alert("No Written Language detected in input document.\n");
+    }
+  else
+    {
+      m_TDesc.RFC5646LanguageTagList = Language->GetBody().c_str();
     }
 
   // list of fonts

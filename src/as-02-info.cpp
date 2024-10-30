@@ -40,6 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <AS_DCP.h>
 #include <AS_02.h>
 #include <AS_02_IAB.h>
+#include <AS_02_JXS.h>
 #include <JP2K.h>
 #include <AS_02_ACES.h>
 #include <ACES.h>
@@ -592,6 +593,98 @@ class MyTextDescriptor : public TimedText::TimedTextDescriptor
   }
 };
 
+class MyJXSDescriptor
+{
+  RGBAEssenceDescriptor *m_RGBADescriptor;
+  CDCIEssenceDescriptor *m_CDCIDescriptor;
+  JPEGXSPictureSubDescriptor *m_JPEGXSSubDescriptor;
+public:
+  ui64_t ContainerDuration;
+  ASDCP::MXF::Rational m_SampleRate;
+  ASDCP::MXF::Rational m_EditRate;
+
+ public:
+  MyJXSDescriptor() :
+    m_RGBADescriptor(0),
+    m_CDCIDescriptor(0),
+    m_JPEGXSSubDescriptor(0),
+    ContainerDuration(0)
+  {}
+
+  void FillDescriptor(AS_02::JXS::MXFReader& Reader)
+  {
+    m_CDCIDescriptor = get_descriptor_by_type<AS_02::JXS::MXFReader, CDCIEssenceDescriptor>
+      (Reader, DefaultCompositeDict().ul(MDD_CDCIEssenceDescriptor));
+
+    m_RGBADescriptor = get_descriptor_by_type<AS_02::JXS::MXFReader, RGBAEssenceDescriptor>
+      (Reader, DefaultCompositeDict().ul(MDD_RGBAEssenceDescriptor));
+
+    if ( m_RGBADescriptor != 0 )
+      {
+    	m_SampleRate = m_RGBADescriptor->SampleRate;
+        if ( ! m_RGBADescriptor->ContainerDuration.empty() )
+          {
+            ContainerDuration = m_RGBADescriptor->ContainerDuration;
+          }
+      }
+    else if ( m_CDCIDescriptor != 0 )
+      {
+    	m_SampleRate = m_CDCIDescriptor->SampleRate;
+        if ( ! m_CDCIDescriptor->ContainerDuration.empty() )
+          {
+            ContainerDuration = m_CDCIDescriptor->ContainerDuration;
+          }
+      }
+    else
+      {
+	DefaultLogSink().Error("Picture descriptor not found.\n");
+      }
+
+    m_JPEGXSSubDescriptor = get_descriptor_by_type<AS_02::JXS::MXFReader, JPEGXSPictureSubDescriptor>
+      (Reader, DefaultCompositeDict().ul(MDD_JPEGXSPictureSubDescriptor));
+
+    if ( m_JPEGXSSubDescriptor == 0 )
+      {
+	DefaultLogSink().Error("JPEGXSPictureSubDescriptor not found.\n");
+      }
+
+    std::list<InterchangeObject*> ObjectList;
+    Reader.OP1aHeader().GetMDObjectsByType(DefaultCompositeDict().ul(MDD_Track), ObjectList);
+    
+    if ( ObjectList.empty() )
+      {
+	DefaultLogSink().Error("MXF Metadata contains no Track Sets.\n");
+      }
+
+    m_EditRate = ((Track*)ObjectList.front())->EditRate;
+  }
+
+  void MyDump(FILE* stream) {
+    if ( stream == 0 )
+      {
+	stream = stderr;
+      }
+
+    if ( m_CDCIDescriptor != 0 )
+      {
+	m_CDCIDescriptor->Dump(stream);
+      }
+    else if ( m_RGBADescriptor != 0 )
+      {
+	m_RGBADescriptor->Dump(stream);
+      }
+    else
+      {
+	return;
+      }
+
+    if ( m_JPEGXSSubDescriptor != 0 )
+      {
+	m_JPEGXSSubDescriptor->Dump(stream);
+      }
+  }
+};
+  
 struct RateInfo
 {
   UL ul;
@@ -693,12 +786,12 @@ public:
       {
 	m_Desc.FillDescriptor(m_Reader);
 	m_Reader.FillWriterInfo(m_WriterInfo);
-
-	fprintf(stdout, "%s file essence type is %s, (%d edit unit%s).\n",
+        ui64_t container_duration = m_Desc.ContainerDuration;
+	fprintf(stdout, "%s file essence type is %s, (%llu edit unit%s).\n",
 		( m_WriterInfo.LabelSetType == LS_MXF_SMPTE ? "SMPTE 2067-5" : "Unknown" ),
 		type_string,
-		m_Desc.ContainerDuration,
-		(m_Desc.ContainerDuration == (ui64_t)1 ? "":"s"));
+		container_duration,
+		(container_duration == ui64_C(1) ? "":"s"));
 
 	if ( Options.showheader_flag )
 	  {
@@ -953,6 +1046,11 @@ show_file_info(CommandOptions& Options, const Kumu::IFileReaderFactory& fileRead
 
       if ( ASDCP_SUCCESS(result) && Options.showcoding_flag )
 	wrapper.dump_WaveAudioDescriptor(stdout);
+    }
+  else if ( EssenceType == ESS_AS02_JPEG_XS )
+    {
+      FileInfoWrapper<AS_02::JXS::MXFReader, MyJXSDescriptor> wrapper(fileReaderFactory);
+      result = wrapper.file_info(Options, "JPEG XS");
     }
   else if ( EssenceType == ESS_AS02_IAB )
     {

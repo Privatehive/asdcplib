@@ -273,6 +273,10 @@ ASDCP::EssenceType(const std::string& filename, EssenceType_t& type, const Kumu:
 	      {
 	        type = ESS_AS02_JPEG_2000;
 	      }
+	    else if ( ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(JPEGXSPictureSubDescriptor))) )
+	      {
+		type = ESS_AS02_JPEG_XS;
+	      }
 	    else if ( ASDCP_SUCCESS(TestHeader.GetMDObjectByType(OBJ_TYPE_ARGS(WaveAudioDescriptor), &md_object)) )
 	      {
 	        assert(md_object);
@@ -655,8 +659,7 @@ ASDCP::IntegrityPack::CalcValues(const ASDCP::FrameBuffer& FB, const byte_t* Ass
   p += MXF_BER_LENGTH;
 
   // sequence number
-  Kumu::i2p<ui64_t>(KM_i64_BE(sequence), p);
-  p += sizeof(ui64_t);
+  p += Kumu::i2p<ui64_t>(KM_i64_BE(sequence), p);
 
   // HMAC length
   memcpy(p, ber_4, MXF_BER_LENGTH);
