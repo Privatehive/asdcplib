@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2021, John Hurst
+Copyright (c) 2005-2022, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -130,6 +130,7 @@ namespace ASDCP
 	    ~PacketList();
 	    void AddPacket(InterchangeObject* ThePacket); // takes ownership
 	    Result_t GetMDObjectByID(const UUID& ObjectID, InterchangeObject** Object);
+	    Result_t DeleteMDObjectByID(const UUID& ObjectID);
 	    Result_t GetMDObjectByType(const byte_t* ObjectID, InterchangeObject** Object);
 	    Result_t GetMDObjectsByType(const byte_t* ObjectID, std::list<InterchangeObject*>& ObjectList);
 	  };
@@ -258,30 +259,6 @@ namespace ASDCP
 	  void set_has_value(bool has_value = true) { this->m_has_value = has_value; }
 	  void reset(const PropertyType& rhs) { this->m_has_value = false; }
 	  bool empty() const { return ! m_has_value; }
-	  PropertyType& get() { return m_property; }
-	  const PropertyType& const_get() const { return m_property; }
-	};
-
-      // wrapper object manages optional properties
-      template <class PropertyType>
-	class optional_container_property
-	{
-	  PropertyType m_property;
-
-	public:
-	  optional_container_property() {}
-	optional_container_property(const PropertyType& value) : m_property(value) {}
-	  const optional_container_property<PropertyType>& operator=(const PropertyType& rhs) {
-	    this->Copy(rhs.m_property);
-	    return *this;
-	  }
-
-	  bool operator==(const PropertyType& rhs) const { return this->m_property == rhs; }
-	  bool operator==(const optional_property<PropertyType>& rhs) const { return this->m_property == rhs.m_property; }
-	  operator PropertyType&() { return this->m_property; }
-	  void set(const PropertyType& rhs) { this->m_property = rhs; }
-	  void reset(const PropertyType& rhs) { this->clear(); }
-	  bool empty() const { return ! this->m_property.HasValue(); }
 	  PropertyType& get() { return m_property; }
 	  const PropertyType& const_get() const { return m_property; }
 	};
@@ -449,6 +426,7 @@ namespace ASDCP
 	  virtual Result_t WriteToFile(Kumu::FileWriter& Writer, ui32_t HeaderLength = 16384);
 	  virtual void     Dump(FILE* = 0);
 	  virtual Result_t GetMDObjectByID(const UUID&, InterchangeObject** = 0);
+	  virtual Result_t DeleteMDObjectByID(const UUID& ObjectID);
 	  virtual Result_t GetMDObjectByType(const byte_t*, InterchangeObject** = 0);
 	  virtual Result_t GetMDObjectsByType(const byte_t* ObjectID, std::list<InterchangeObject*>& ObjectList);
 	  Identification*  GetIdentification();
@@ -485,6 +463,7 @@ namespace ASDCP
 	  virtual void     Dump(FILE* = 0);
 
 	  virtual Result_t GetMDObjectByID(const UUID&, InterchangeObject** = 0);
+	  virtual Result_t DeleteMDObjectByID(const UUID& ObjectID);
 	  virtual Result_t GetMDObjectByType(const byte_t*, InterchangeObject** = 0);
 	  virtual Result_t GetMDObjectsByType(const byte_t* ObjectID, std::list<InterchangeObject*>& ObjectList);
 
