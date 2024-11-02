@@ -605,33 +605,45 @@ namespace ASDCP {
 	MDD_CodingEquations_BGR, // 567
 	MDD_CodingEquations_ST240M, // 568
 	MDD_CodingEquations_YCGCO, // 569
-	MDD_MXFGCFrameWrappedEssenceContainerProResPicture, // 570
-	MDD_MXFGCClipWrappedMGA, //571
-	MDD_ClipWrappedMGASADMSoundElement, // 572
-	MDD_MGASoundEssenceDescriptor, //573
-	MDD_MGASoundEssenceDescriptor_MGASoundEssenceAverageBytesPerSecond, // 574
-	MDD_MGAAudioEssenceUncompressedSoundCoding, // 575
-	MDD_MGASoundfield, // 576
-	MDD_MGAAudioMetadataSubDescriptor, // 577
-	MDD_SADMAudioMetadataSubDescriptor, // 578
-	MDD_MCALabelSubDescriptor_MCAContent, // 579
-	MDD_MCALabelSubDescriptor_MCAUseClass, // 580
-	MDD_MGASoundfieldGroupLabelSubDescriptor, // 581
-	MDD_MGASoundfieldGroupLabelSubDescriptor_MGAMetadataSectionLinkID, // 582
-	MDD_MGASoundfieldGroupLabelSubDescriptor_ADMAudioProgrammeID, // 583
-	MDD_MGASoundfieldGroupLabelSubDescriptor_ADMAudioContentID, // 584
-	MDD_MGASoundfieldGroupLabelSubDescriptor_ADMAudioObjectID, // 585
-	MDD_ADMAudioMetadataSubDescriptor, // 586
-	MDD_ADMAudioMetadataSubDescriptor_RIFFChunkStreamID_link1, // 587
-	MDD_ADMAudioMetadataSubDescriptor_ADMProfileLevelULBatch, // 588
-	MDD_ADMSoundfield, // 589
-	MDD_ADMSoundfieldGroupLabelSubDescriptor, // 590
-	MDD_ADMSoundfieldGroupLabelSubDescriptor_RIFFChunkStreamID_link2, // 591
-	MDD_ADMSoundfieldGroupLabelSubDescriptor_ADMAudioProgrammeID_ST2131, // 592
-	MDD_ADMSoundfieldGroupLabelSubDescriptor_ADMAudioContentID_ST2131, // 593
-	MDD_ADMSoundfieldGroupLabelSubDescriptor_ADMAudioObjectID_ST2131, // 594
-	MDD_FrameWrappedProResPictureElement, // 595
-	MDD_ADM_CHNASubDescriptor, // 596
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_1_1, // 570
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_2_1, // 571
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_3_1, // 572
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_4_1, // 573
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_4_2, // 574
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_5_1, // 575
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_5_2, // 576
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_5_3, // 577
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_6_1, // 578
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_6_2, // 579
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_6_3, // 580
+	MDD_JP2KEssenceCompression_IMFProfile_2K_Lossy_6_4, // 581
+	MDD_MXFGCFrameWrappedEssenceContainerProResPicture, // 582
+	MDD_MXFGCClipWrappedMGA, //583
+	MDD_ClipWrappedMGASADMSoundElement, // 584
+	MDD_MGASoundEssenceDescriptor, //585
+	MDD_MGASoundEssenceDescriptor_MGASoundEssenceAverageBytesPerSecond, // 586
+	MDD_MGAAudioEssenceUncompressedSoundCoding, // 587
+	MDD_MGASoundfield, // 588
+	MDD_MGAAudioMetadataSubDescriptor, // 589
+	MDD_SADMAudioMetadataSubDescriptor, // 590
+	MDD_MCALabelSubDescriptor_MCAContent, // 591
+	MDD_MCALabelSubDescriptor_MCAUseClass, // 592
+	MDD_MGASoundfieldGroupLabelSubDescriptor, // 593
+	MDD_MGASoundfieldGroupLabelSubDescriptor_MGAMetadataSectionLinkID, // 594
+	MDD_MGASoundfieldGroupLabelSubDescriptor_ADMAudioProgrammeID, // 595
+	MDD_MGASoundfieldGroupLabelSubDescriptor_ADMAudioContentID, // 596
+	MDD_MGASoundfieldGroupLabelSubDescriptor_ADMAudioObjectID, // 597
+	MDD_ADMAudioMetadataSubDescriptor, // 598
+	MDD_ADMAudioMetadataSubDescriptor_RIFFChunkStreamID_link1, // 599
+	MDD_ADMAudioMetadataSubDescriptor_ADMProfileLevelULBatch, // 600
+	MDD_ADMSoundfield, // 601
+	MDD_ADMSoundfieldGroupLabelSubDescriptor, // 602
+	MDD_ADMSoundfieldGroupLabelSubDescriptor_RIFFChunkStreamID_link2, // 603
+	MDD_ADMSoundfieldGroupLabelSubDescriptor_ADMAudioProgrammeID_ST2131, // 604
+	MDD_ADMSoundfieldGroupLabelSubDescriptor_ADMAudioContentID_ST2131, // 605
+	MDD_ADMSoundfieldGroupLabelSubDescriptor_ADMAudioObjectID_ST2131, // 606
+	MDD_FrameWrappedProResPictureElement, // 607
+	MDD_ADM_CHNASubDescriptor, // 608
 	MDD_Max
     }; // enum MDD_t
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2005-2021, John Hurst
+Copyright (c) 2005-2022, John Hurst
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -218,6 +218,22 @@ ASDCP::MXF::Partition::PacketList::GetMDObjectByID(const UUID& ObjectID, Interch
     }
 
   *Object = (*mi).second;
+  return RESULT_OK;
+}
+
+//
+ASDCP::Result_t
+ASDCP::MXF::Partition::PacketList::DeleteMDObjectByID(const UUID& ObjectID)
+{
+  std::map<UUID, InterchangeObject*>::iterator mi = m_Map.find(ObjectID);
+  
+  if ( mi == m_Map.end() )
+    {
+       return RESULT_FAIL;
+    }
+
+  delete (*mi).second;
+  m_Map.erase(mi);
   return RESULT_OK;
 }
 
@@ -885,10 +901,18 @@ ASDCP::MXF::OP1aHeader::InitFromBuffer(const byte_t* p, ui32_t l)
   return result;
 }
 
+//
 ASDCP::Result_t
 ASDCP::MXF::OP1aHeader::GetMDObjectByID(const UUID& ObjectID, InterchangeObject** Object)
 {
   return m_PacketList->GetMDObjectByID(ObjectID, Object);
+}
+
+//
+ASDCP::Result_t
+ASDCP::MXF::OP1aHeader::DeleteMDObjectByID(const UUID& ObjectID)
+{
+  return m_PacketList->DeleteMDObjectByID(ObjectID);
 }
 
 //
@@ -1225,10 +1249,18 @@ ASDCP::MXF::OPAtomIndexFooter::Dump(FILE* stream)
     (*i)->Dump(stream);
 }
 
+//
 ASDCP::Result_t
 ASDCP::MXF::OPAtomIndexFooter::GetMDObjectByID(const UUID& ObjectID, InterchangeObject** Object)
 {
   return m_PacketList->GetMDObjectByID(ObjectID, Object);
+}
+
+//
+ASDCP::Result_t
+ASDCP::MXF::OPAtomIndexFooter::DeleteMDObjectByID(const UUID& ObjectID)
+{
+  return m_PacketList->DeleteMDObjectByID(ObjectID);
 }
 
 //
@@ -1644,11 +1676,15 @@ bool
 ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& labels, const Dictionary* dict, const std::string& language,
 			      InterchangeObject_list_t& descriptor_list, ui32_t& channel_count)
 {
+  typedef std::map<const std::string, ASDCP::MXF::SoundfieldGroupLabelSubDescriptor *, ci_comp> sfg_map_t;
   std::string symbol_buf;
   std::string current_language;
   channel_count = 0;
   ASDCP::MXF::SoundfieldGroupLabelSubDescriptor *current_soundfield = 0, *prev_soundfield = 0;
   std::string::const_iterator i;
+  sfg_map_t used_soundfields; /* Track old soundfields, so that they can be reused. This allows
+                                 for the following type of layout:
+                                 71(L,R,C,LFE,Lss,Rss),HI,VIN,-,-,71(Lrs,Rrs),DBOX,-  */
 
   for ( i = s.begin(); i != s.end(); ++i )
     {
@@ -1693,15 +1729,23 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
 	      return false;
 	    }
 
-	  current_soundfield = new ASDCP::MXF::SoundfieldGroupLabelSubDescriptor(dict);
-	  GenRandomValue(current_soundfield->MCALinkID);
+	  sfg_map_t::const_iterator ui = used_soundfields.find(symbol_buf);
+	  if ( ui != used_soundfields.end() )
+	    {
+	      current_soundfield = ui->second;  // reuse the old soundfield.
+	    }
+	  else
+	    {
+	      current_soundfield = new ASDCP::MXF::SoundfieldGroupLabelSubDescriptor(dict);
+	      GenRandomValue(current_soundfield->MCALinkID);
 
-	  current_soundfield->MCATagSymbol = (i->second.requires_prefix ? "sg" : "") + i->first;
-	  current_soundfield->MCATagName = i->second.tag_name;
-	  current_soundfield->RFC5646SpokenLanguage = language;
-	  current_soundfield->MCALabelDictionaryID = i->second.ul;
-	  descriptor_list.push_back(reinterpret_cast<ASDCP::MXF::InterchangeObject*>(current_soundfield));
-	  prev_soundfield = current_soundfield;
+	      current_soundfield->MCATagSymbol = (i->second.requires_prefix ? "sg" : "") + i->first;
+	      current_soundfield->MCATagName = i->second.tag_name;
+	      current_soundfield->RFC5646SpokenLanguage = language;
+	      current_soundfield->MCALabelDictionaryID = i->second.ul;
+	      descriptor_list.push_back(reinterpret_cast<ASDCP::MXF::InterchangeObject*>(current_soundfield));
+	      prev_soundfield = current_soundfield;
+	    }
 	  symbol_buf.clear();
 	}
       else if ( *i == ')' )
@@ -1794,7 +1838,6 @@ ASDCP::MXF::decode_mca_string(const std::string& s, const mca_label_map_t& label
                 {
                   channel_descr->RFC5646SpokenLanguage = current_language;
                 }
-              current_language.empty();
 	      channel_descr->MCALabelDictionaryID = i->second.ul;
 	      descriptor_list.push_back(reinterpret_cast<ASDCP::MXF::InterchangeObject*>(channel_descr));
 	      symbol_buf.clear();
