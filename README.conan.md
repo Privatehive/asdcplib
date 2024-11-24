@@ -11,7 +11,7 @@ $ conan create . --build missing
 
 Optionally you can disable some libasdcp features. You can list them by running `$ conan inspect .` and observing the `options` entry.
 
-To apply them provide them to the connan call:
+To apply them provide them to the conan call:
 ```bash
 $ cmake -o encryption_support=False -o xml_support=False -o jxs_support=False . --build missing
 ```
