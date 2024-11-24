@@ -1,30 +1,17 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.21.1)
 
-project(asdcplib)
-
-# The version number.
+# Read the version number from configure.ac
 file(STRINGS configure.ac VERSION_STRING REGEX "AC_INIT.*")
-STRING(REGEX MATCH "[0-9]*[\\.][0-9]*[\\.][0-9]*" VERSION_STRING ${VERSION_STRING})
-STRING(REGEX REPLACE "([0-9]+)[.].*" "\\1" VERSION_MAJOR ${VERSION_STRING})
-STRING(REGEX REPLACE ".*[.]([0-9]+)[.].*" "\\1" VERSION_MINOR ${VERSION_STRING})
-STRING(REGEX REPLACE ".*[.]+([0-9]+)" "\\1" VERSION_PATCH ${VERSION_STRING})
+string(REGEX MATCH "[0-9]*[\\.][0-9]*[\\.][0-9]*" VERSION_STRING ${VERSION_STRING})
+string(REGEX REPLACE "([0-9]+)[.].*" "\\1" VERSION_MAJOR ${VERSION_STRING})
+string(REGEX REPLACE ".*[.]([0-9]+)[.].*" "\\1" VERSION_MINOR ${VERSION_STRING})
+string(REGEX REPLACE ".*[.]+([0-9]+)" "\\1" VERSION_PATCH ${VERSION_STRING})
 message(STATUS "Version Number is ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+
+project(asdcplib VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" LANGUAGES CXX)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "Default Targets")
-# use, i.e. don't skip the full RPATH for the build tree
-set(CMAKE_SKIP_BUILD_RPATH  OFF)
-# when building, don't use the install RPATH already
-# (but later on when installing)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF) 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-# the RPATH to be used when installing, but only if it's not a system directory
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-endif("${isSystemDir}" STREQUAL "-1")
 
 # Configure a header file to pass some of the CMake settings to the source code.
 configure_file("${PROJECT_SOURCE_DIR}/src/info.in" "${PROJECT_BINARY_DIR}/src/info.h")
