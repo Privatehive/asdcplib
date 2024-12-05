@@ -80,6 +80,12 @@ set(libkumu_public_header
 		KM_xml.h
 )
 
+if (APPLE)
+	find_library(CORE_FOUNDATION CoreFoundation)
+	find_library(CORE_SERVICES CoreServices)
+	target_link_libraries(libkumu PRIVATE ${CORE_FOUNDATION} PRIVATE ${CORE_SERVICES})
+endif()
+
 if (WIN32)
 	set(libkumu_public_header "dirent_win.h;${libkumu_public_header}")
 endif ()
