@@ -23,12 +23,11 @@ class AsdcpLibConan(ConanFile):
     # ---Package reference---
     name = "asdcplib"
     version = read_version()
+    user = "imftool"
+    channel = "stable"
     # ---Metadata---
     description = "The asdcplib library is an API and command-line tool set that offers access to files conforming to the sound and picture track file formats developed by the SMPTE Working Group DC28.20 (now TC 21DC)."
     license = "proprietary"
-    topics = ["mxf", "AS-02", "IMF EssenceComponent"]
-    homepage = "https://github.com/IMFTool/asdcplib"
-    url = "https://github.com/IMFTool/asdcplib"
     # ---Requirements---
     requires = []
     tool_requires = ["cmake/[>=3.21.1]", "ninja/[>=1.11.1]"]
