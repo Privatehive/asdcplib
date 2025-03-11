@@ -61,7 +61,7 @@ class AsdcpLibConan(ConanFile):
 
     def requirements(self):
         if self.options.encryption_support:
-            self.requires("openssl/[>=3.3.2]", options={"no_zlib": True, "no_asm": True, "shared": False})
+            self.requires("openssl/[~3.0]", options={"no_zlib": True, "no_asm": True, "shared": False})
         if self.options.xml_support:
             self.requires("xerces-c/[>=3.2.5]", options={"network": False, "shared": False})
 
